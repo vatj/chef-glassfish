@@ -1,5 +1,5 @@
 #
-# Copyright:: Peter Donald
+# Copyright:: Akos Vandra
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@
 # limitations under the License.
 #
 
-actions :create, :delete
+actions [:create, :delete]
+default_action :create
 
-attribute :jndi_name, kind_of: String, name_attribute: true
+# <> @attribute username to create
+attribute :user_name, name_attribute: true, kind_of: String
 
 attribute :target, kind_of: String, default: 'server'
-# <> @attribute enabled Determines whether the resource is enabled at runtime.
-attribute :enabled, equal_to: [true, false, 'true', 'false'], default: true
-# <> @attribute enabled Determines whether container contexts are propagated to threads. If set to true, the contexts specified in the --contextinfo option are propagated. If set to false, no contexts are propagated and the --contextinfo option is ignored.
-attribute :contextinfoenabled, equal_to: [true, false, 'true', 'false'], default: true
-# <> @attribute contextinfo Specifies individual container contexts to propagate to threads. Valid values are Classloader, JNDI, Security, and WorkArea. Values are specified in a comma-separated list and are case-insensitive. All contexts are propagated by default.
-attribute :contextinfo, kind_of: String, default: 'Classloader,JNDI,Security,WorkArea'
-# <> @attribute contextinfo Descriptive details about the resource.
-attribute :description, kind_of: String
+# <> @attribute realm auth realm to create the user in
+attribute :realm, kind_of: String, required: false
+# <> @attribute default password to create the username with
+attribute :password, kind_of: String, required: true
 
 # <> @attribute domain_name The name of the domain.
 attribute :domain_name, kind_of: String, required: true
@@ -48,10 +46,8 @@ attribute :system_user, kind_of: String, default: nil
 # <> @attribute system_group The group that the domain executes as. Defaults to `node['glassfish']['group']` if unset.
 attribute :system_group, kind_of: String, default: nil
 
-default_action :create
-
 def initialize(*args)
-  super
+  super(*args)
   @system_user = node['glassfish']['user']
   @system_group = node['glassfish']['group']
 end

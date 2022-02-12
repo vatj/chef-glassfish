@@ -1,5 +1,5 @@
 #
-# Copyright Peter Donald
+# Copyright:: Peter Donald
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,29 @@
 
 include Chef::Asadmin
 
+provides :glassfish_library, os: 'linux'
+
 def type_flag
   "--type #{new_resource.library_type}"
 end
 
-use_inline_resources
+def service_name
+  "glassfish-#{new_resource.domain_name}"
+end
 
 action :add do
-  service "glassfish-#{new_resource.domain_name}" do
-    supports :restart => true, :status => true
+  glassfish_wait_for_glassfish new_resource.domain_name do
+    username new_resource.username
+    password_file new_resource.password_file
+    admin_port new_resource.admin_port
+    only_if { new_resource.admin_port }
     action :nothing
+  end
+
+  service "glassfish-#{new_resource.domain_name}" do
+    supports restart: true, status: true
+    action :nothing
+    notifies :run, "glassfish_wait_for_glassfish[#{new_resource.domain_name}]", :immediately
   end
 
   cached_package_filename = "#{Chef::Config[:file_cache_path]}/#{new_resource.domain_name}_#{Digest::SHA1.hexdigest(new_resource.url)}/#{::File.basename(new_resource.url)}"
@@ -34,7 +47,7 @@ action :add do
   directory ::File.dirname(cached_package_filename) do
     not_if check_command
     owner new_resource.system_user
-    group new_resource.system_group unless node['os'] == 'windows'
+    group new_resource.system_group
     mode '0770'
     recursive true
   end
@@ -43,7 +56,7 @@ action :add do
     not_if check_command
     source new_resource.url
     owner new_resource.system_user
-    group new_resource.system_group unless node['os'] == 'windows'
+    group new_resource.system_group
     mode '0640'
     action :create_if_missing
   end
@@ -55,14 +68,12 @@ action :add do
   args << cached_package_filename
 
   execute "asadmin_add-library #{new_resource.url}" do
-    not_if check_command, :timeout => node['glassfish']['asadmin']['timeout'] + 5
+    not_if check_command, timeout: node['glassfish']['asadmin']['timeout'] + 5
     timeout node['glassfish']['asadmin']['timeout'] + 5
-    user new_resource.system_user unless node['os'] == 'windows'
-    group new_resource.system_group unless node['os'] == 'windows'
+    user new_resource.system_user
+    group new_resource.system_group
     command asadmin_command(args.join(' '))
-    if new_resource.requires_restart
-      notifies :restart, "service[glassfish-#{new_resource.domain_name}]", :immediate
-    end
+    notifies :restart, "service[glassfish-#{new_resource.domain_name}]", :immediately if new_resource.requires_restart
   end
 end
 
@@ -73,10 +84,10 @@ action :remove do
   args << ::File.basename(new_resource.url)
 
   execute "asadmin_remove-library #{new_resource.url}" do
-    only_if "#{asadmin_command('list-libraries')} #{type_flag} | grep -F -x -- '#{::File.basename(new_resource.url)}'", :timeout => node['glassfish']['asadmin']['timeout'] + 5
+    only_if "#{asadmin_command('list-libraries')} #{type_flag} | grep -F -x -- '#{::File.basename(new_resource.url)}'", timeout: node['glassfish']['asadmin']['timeout'] + 5
     timeout node['glassfish']['asadmin']['timeout'] + 5
-    user new_resource.system_user unless node['os'] == 'windows'
-    group new_resource.system_group unless node['os'] == 'windows'
+    user new_resource.system_user
+    group new_resource.system_group
     command asadmin_command(args.join(' '))
   end
 end
