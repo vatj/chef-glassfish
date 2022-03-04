@@ -240,6 +240,7 @@ def gf_managed?(data)
   (data.nil? || data['managed'].nil?) ? true : !!data['managed']
 end
 
+gf_sort(node['glassfish']['domains']).each_pair do |domain_key, definition|
   RealityForge::GlassFish.set_current_domain(node, domain_key)
   if definition['recipes'] && definition['recipes']['before']
     gf_sort(definition['recipes']['before']).each_pair do |recipe, config|
