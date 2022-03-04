@@ -240,7 +240,6 @@ def gf_managed?(data)
   (data.nil? || data['managed'].nil?) ? true : !!data['managed']
 end
 
-gf_sort(node['glassfish']['domains']).each_pair do |domain_key, definition|
   RealityForge::GlassFish.set_current_domain(node, domain_key)
   if definition['recipes'] && definition['recipes']['before']
     gf_sort(definition['recipes']['before']).each_pair do |recipe, config|
@@ -258,6 +257,7 @@ gf_sort(node['glassfish']['domains']).each_pair do |domain_key, definition|
 
   Chef::Log.info "Defining GlassFish Domain #{domain_key}"
 
+  debug = definition['config']['debug']
   admin_port = definition['config']['admin_port']
   username = definition['config']['username']
   secure = definition['config']['secure']
@@ -287,7 +287,7 @@ gf_sort(node['glassfish']['domains']).each_pair do |domain_key, definition|
     username username if username
     password_file password_file if password_file
     secure secure if secure
-    debug definition['debug']
+    debug debug
     password definition['config']['password'] if definition['config']['password']
     master_password definition['config']['master_password'] if definition['config']['master_password']
     logging_properties definition['logging_properties'] if definition['logging_properties']
