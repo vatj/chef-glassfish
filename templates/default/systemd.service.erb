@@ -2,6 +2,7 @@
 [Unit]
 Description = GlassFish Server for <%= @new_resource.domain_name %>
 After = syslog.target network.target remote-fs.target mysqld.service
+StartLimitIntervalSec=0
 
 [Install]
 WantedBy = multi-user.target
@@ -23,4 +24,6 @@ EnvironmentFile=<%= @new_resource.env_var_file %>
 <% end -%>
 TimeoutStartSec = <%= @start_domain_timeout %>
 TimeoutStopSec = <%= @stop_domain_timeout %>
+Restart=always
+RestartSec=5
 

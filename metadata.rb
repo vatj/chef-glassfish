@@ -1,17 +1,21 @@
-name             'glassfish'
-maintainer       'Peter Donald'
+name 'glassfish'
+maintainer 'Peter Donald'
 maintainer_email 'peter@realityforge.org'
-license          'Apache 2.0'
-description      'Installs/Configures GlassFish Application Server'
-long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          "2.6.0"
+license 'Apache-2.0'
+description 'Installs/Configures GlassFish Application Server'
+version '1.2.7'
+chef_version '>= 13.0'
+
+issues_url 'https://github.com/realityforge/chef-glassfish'
+source_url 'https://github.com/realityforge/chef-glassfish'
 
 supports 'ubuntu'
 supports 'debian'
-
-# Compat resource is required for 12.5+ as resource API changed between 12.4 and 12.5
-depends 'compat_resource', '~> 12.19.0'
+supports 'windows'
 
 depends 'authbind', '~> 0.1.10'
 depends 'java'
-
+depends 'authbind'
+depends 'archive'
+depends 'cutlery'
+depends 'runit'
